@@ -50,47 +50,66 @@ data/
   masks_volumetric_metadata.csv
 ```
 
-Before running the pipeline, set the local paths in `main.py`:
-
-```python
-project_root = "/path/to/project"
-data_source = "/path/to/data"
-```
+The default file names can be overridden with command-line arguments if your local layout differs.
 
 ## Usage
 
 Preprocess labels and sample training queries:
 
 ```bash
-python main.py --preprocess --gpu=0
+python main.py --preprocess \
+  --data_root /path/to/data \
+  --save_path /path/to/experiments \
+  --gpu=0
 ```
 
 Train the model:
 
 ```bash
-python main.py --train --gpu=0
+python main.py --train \
+  --data_root /path/to/data \
+  --save_path /path/to/experiments \
+  --gpu=0
 ```
 
 Generate segmentation volumes:
 
 ```bash
-python main.py --generate --gpu=0
+python main.py --generate \
+  --data_root /path/to/data \
+  --save_path /path/to/experiments \
+  --gpu=0
 ```
 
 Evaluate generated segmentations:
 
 ```bash
-python main.py --evaluate --gpu=0
+python main.py --evaluate \
+  --data_root /path/to/data \
+  --save_path /path/to/experiments
 ```
 
 Use `--gpu=auto` to select the least-used GPU according to available memory.
 
+Optional path overrides:
+
+```bash
+--training_list_file_path /path/to/training_patient_list.txt
+--testing_list_file_path /path/to/test_patient_list.txt
+--raw_label_json_file_path /path/to/organ_label_list.json
+--label_json_file_path /path/to/label_organs.json
+--body_data_path /path/to/data_1k_python37.npz
+--mask_dir /path/to/masks_volumetric_preprocessed_v2
+--metadata_csv /path/to/masks_volumetric_metadata.csv
+--gt_dir /path/to/mapped_masks
+```
+
 ## Outputs
 
-By default, experiment outputs are written below:
+By default, experiment outputs are written below `save_path`:
 
 ```text
-experiments/dpt_siren_1k_v2/
+<save_path>/implicit-anatomy/
   1_preprocess/
   2_train/
   3_generate/

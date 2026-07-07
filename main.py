@@ -1,19 +1,9 @@
+import argparse
 from types import SimpleNamespace
 
 import os
 import json
 import time, datetime
-import numpy as np
-
-from multiprocessing import Process
-
-import pandas as pd
-from tqdm import tqdm
-
-from steps.segmentation.evaluation.evaluate_segmentations import EvaluateSegmentations
-from steps.segmentation.evaluation.segmentation_report import SegmentationReport
-from steps.segmentation.processing.map_labels import MapLabels
-from steps.segmentation.processing.query_sampling import QuerySampling
 
 
 def setup_least_used_gpu():
@@ -55,42 +45,129 @@ def setup_gpu(gpu_id):
     return gpu_id
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description=(
+            "Surface-conditioned implicit anatomy reconstruction pipeline."
+        )
+    )
+
+    parser.add_argument(
+        "-p", "--preprocess", action="store_true",
+        help="Run preprocessing.",
+    )
+    parser.add_argument(
+        "-t", "--train", action="store_true",
+        help="Run training.",
+    )
+    parser.add_argument(
+        "-g", "--generate", action="store_true",
+        help="Generate segmentation volumes.",
+    )
+    parser.add_argument(
+        "-e", "--evaluate", action="store_true",
+        help="Run evaluation.",
+    )
+    parser.add_argument(
+        "--gpu", type=str, default="auto",
+        help="GPU id to use, or 'auto' for the least-used GPU.",
+    )
+    parser.add_argument(
+        "--data_root", type=str, required=True,
+        help="Root directory containing input data and metadata.",
+    )
+    parser.add_argument(
+        "--save_path", type=str, required=True,
+        help="Directory where experiment outputs are written.",
+    )
+    parser.add_argument(
+        "--experiment_name", type=str, default="implicit-anatomy",
+        help="Name of the experiment subdirectory.",
+    )
+
+    parser.add_argument(
+        "--training_list_file_path", type=str, default=None,
+        help="Training subject list file. Defaults to data_root/training_patient_list.txt.",
+    )
+    parser.add_argument(
+        "--testing_list_file_path", type=str, default=None,
+        help="Testing subject list file. Defaults to data_root/test_patient_list.txt.",
+    )
+    parser.add_argument(
+        "--raw_label_json_file_path", type=str, default=None,
+        help="Raw label mapping JSON. Defaults to data_root/organ_label_list.json.",
+    )
+    parser.add_argument(
+        "--label_json_file_path", type=str, default=None,
+        help="Training label JSON. Defaults to data_root/label_organs.json.",
+    )
+    parser.add_argument(
+        "--body_data_path", type=str, default=None,
+        help="Body point-cloud NPZ file. Defaults to data_root/data_1k_python37.npz.",
+    )
+    parser.add_argument(
+        "--mask_dir", type=str, default=None,
+        help="Input mask directory. Defaults to data_root/masks_volumetric_preprocessed_v2.",
+    )
+    parser.add_argument(
+        "--metadata_csv", type=str, default=None,
+        help="Volume metadata CSV. Defaults to data_root/masks_volumetric_metadata.csv.",
+    )
+    parser.add_argument(
+        "--gt_dir", type=str, default=None,
+        help="Mapped ground-truth mask directory for evaluation. Defaults to the preprocessing output.",
+    )
+
+    args = parser.parse_args()
+
+    if not any((args.preprocess, args.train, args.generate, args.evaluate)):
+        parser.error(
+            "Select at least one pipeline stage: --preprocess, --train, "
+            "--generate, or --evaluate."
+        )
+
+    return args
+
+
 def main():
-    """
-    Usage:
-        main.py [options]
-        main.py --help | -h
-
-    Options:
-        -p, --preprocess                Run preprocessing
-        -t, --train                     Run training
-        -g, --generate                  Generate segmentation volumes
-        -e, --evaluate                  Run evaluation
-
-        --gpu=<id>                      GPU id to use, or auto [default: auto]
-        -h, --help                      Show this help
-    """
-
-    from docopt import docopt
-    arguments = docopt(main.__doc__)
-
-    experiment_name = "dpt_siren_1k_v2"
+    args = parse_args()
 
     # define paths
-    project_root = "/path/to/project"
-    data_source = "/path/to/data"
-    training_patient_list_file = os.path.join(data_source, "training_patient_list.txt")
-    test_patient_list_file = os.path.join(data_source, "test_patient_list.txt")
-    raw_label_json_path = os.path.join(data_source, "organ_label_list.json")
-    train_label_json_path = os.path.join(data_source, "label_organs.json")
-    body_data_path = os.path.join(data_source,"data_1k_python37.npz")
-    mask_dir = os.path.join(data_source, 'masks_volumetric_preprocessed_v2')
-    prefix = os.path.join(project_root, "experiments")
-    experiment_root = os.path.join(prefix, experiment_name)
+    data_source = args.data_root
+    training_patient_list_file = (
+        args.training_list_file_path
+        or os.path.join(data_source, "training_patient_list.txt")
+    )
+    test_patient_list_file = (
+        args.testing_list_file_path
+        or os.path.join(data_source, "test_patient_list.txt")
+    )
+    raw_label_json_path = (
+        args.raw_label_json_file_path
+        or os.path.join(data_source, "organ_label_list.json")
+    )
+    train_label_json_path = (
+        args.label_json_file_path
+        or os.path.join(data_source, "label_organs.json")
+    )
+    body_data_path = (
+        args.body_data_path
+        or os.path.join(data_source, "data_1k_python37.npz")
+    )
+    mask_dir = (
+        args.mask_dir
+        or os.path.join(data_source, "masks_volumetric_preprocessed_v2")
+    )
+    metadata_csv = (
+        args.metadata_csv
+        or os.path.join(data_source, "masks_volumetric_metadata.csv")
+    )
+    experiment_root = os.path.join(args.save_path, args.experiment_name)
     preprocess_data = os.path.join(experiment_root, "1_preprocess")
     training_data = os.path.join(experiment_root, "2_train")
     generate_data = os.path.join(experiment_root, "3_generate/weights_last")
     evaluate_data = os.path.join(experiment_root, "4_evaluate/weights_last")
+    gt_dir = args.gt_dir or os.path.join(preprocess_data, "mapped_masks")
 
     # Load Patient Data
     train_patient_list = []
@@ -141,7 +218,10 @@ def main():
         value_mapping[raw_label] = train_label
         name_mapping[train_label] = organ
 
-    if arguments["--preprocess"]:
+    if args.preprocess:
+        from steps.segmentation.processing.map_labels import MapLabels
+        from steps.segmentation.processing.query_sampling import QuerySampling
+
         os.makedirs(preprocess_data, exist_ok=True)
         mapped_mask_dir = os.path.join(preprocess_data, "mapped_masks")
 
@@ -185,9 +265,10 @@ def main():
             patient_ids=train_patient_list,
         )
 
-    if arguments["--train"]:
-        setup_gpu(arguments["--gpu"])
+    if args.train:
+        setup_gpu(args.gpu)
 
+        import numpy as np
         import torch
         import torch.optim as optim
         from tensorboardX import SummaryWriter
@@ -295,10 +376,15 @@ def main():
 
         logger.close()
 
-    if arguments["--generate"]:
-        setup_gpu(arguments["--gpu"])
+    if args.generate:
+        setup_gpu(args.gpu)
 
+        from multiprocessing import Process
+
+        import numpy as np
+        import pandas as pd
         import torch
+        from tqdm import tqdm
 
         from common.gpu_monitor import daemon_process
 
@@ -322,7 +408,6 @@ def main():
 
         #Dataset
         body_data = np.load(body_data_path, allow_pickle=False)
-        metadata_csv = os.path.join(data_source, 'masks_volumetric_metadata.csv')
         test_dataset = NAKO10KBodyDataset(
             patient_ids=test_patient_list,
             body_data=body_data,
@@ -422,11 +507,13 @@ def main():
         time_df.set_index(['patient_id'], inplace=True)
         time_df.to_csv(out_time_file)
 
-    if arguments["--evaluate"]:
+    if args.evaluate:
+        from steps.segmentation.evaluation.evaluate_segmentations import EvaluateSegmentations
+        from steps.segmentation.evaluation.segmentation_report import SegmentationReport
+
         os.makedirs(evaluate_data, exist_ok=True)
 
         pred_dir = os.path.join(generate_data, "volumes")
-        gt_dir = os.path.join(prefix, "masks_volumetric_preprocessed_v2_mapped")
 
         evaluator = EvaluateSegmentations(
             gt_dir=gt_dir,
@@ -451,10 +538,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
