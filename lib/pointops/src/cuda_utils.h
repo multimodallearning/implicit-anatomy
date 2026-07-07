@@ -1,6 +1,7 @@
 #ifndef _CUDA_UTILS_H
 #define _CUDA_UTILS_H
 
+#include <stdint.h>
 #include <cmath>
 #include <algorithm>
 
