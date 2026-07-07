@@ -37,20 +37,7 @@ cd ../..
 
 The dataset is not included due to privacy restrictions. The code expects preprocessed body-surface point clouds, volumetric segmentation masks, label metadata, and train/test subject lists.
 
-Expected input layout:
-
-```text
-data/
-  data_1k_python37.npz
-  training_patient_list.txt
-  test_patient_list.txt
-  organ_label_list.json
-  label_organs.json
-  masks_volumetric_preprocessed_v2/
-  masks_volumetric_metadata.csv
-```
-
-The default file names can be overridden with command-line arguments if your local layout differs.
+Input paths are configured via command-line arguments. If your local file names differ from the defaults, use the optional path overrides listed below.
 
 ## Usage
 
