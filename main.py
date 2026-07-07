@@ -335,10 +335,6 @@ def main():
         decoder = ModulatedSirenDecoder(c_dim=c_dim, hidden_size=256, n_layers=5, num_classes=num_classes, w0_initial=5.)
         model = BodyImplicitSegmentationNetwork(encoder=body_encoder, decoder=decoder, device=device)
 
-        # model_weights_path = os.path.join(
-        #     training_data,
-        #     "model_weights_best.pth",
-        # )
 
         model_weights_path = os.path.join(
             training_data,

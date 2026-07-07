@@ -6,18 +6,17 @@ import SimpleITK as sitk
 
 from tqdm import tqdm
 
-from common.scoring import compute_hausdorff, compute_dice_per_organ, compute_detection_offset_error, compute_surface_distance
+from common.scoring import compute_hausdorff, compute_dice_per_organ, compute_surface_distance
 
 
 class EvaluateSegmentations:
 
-    metrics = ['DSC', 'HDD', 'HDD95', 'DOE', 'USD', 'ASSD']
+    metrics = ['DSC', 'HDD', 'HDD95', 'USD', 'ASSD']
 
     metric_names = {
         'DSC'   : 'Dice coefficient',
         'HDD'   : 'Hausdorff distance',
         'HDD95' : '95th percentile Hausdorff distance',
-        'DOE'   : 'Detection offset error',
         'USD'   : 'Unweighted surface distance',
         'ASSD'  : 'Average symmetric surface distance',
 
@@ -74,11 +73,6 @@ class EvaluateSegmentations:
         if any(metric in self.selected_metrics for metric in ['USD', 'ASSD']):
             results.update(
                 compute_surface_distance(gt, pred, self.classes)
-            )
-
-        if "DOE" in self.selected_metrics:
-            results.update(
-                compute_detection_offset_error(gt, pred, self.classes)
             )
 
         return results

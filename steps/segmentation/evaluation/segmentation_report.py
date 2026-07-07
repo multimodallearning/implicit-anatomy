@@ -14,7 +14,7 @@ class SegmentationReport:
     """Create a compact HTML report from an eval_all.csv table.
 
     The expected input is a wide table with one row per patient and metric
-    columns such as dice_liver, hd95_liver, hd_liver, doe_liver.
+    columns such as dice_liver, hd95_liver, hd_liver.
     """
 
     DEFAULT_METRICS = {
@@ -24,9 +24,6 @@ class SegmentationReport:
         "usd_": "USD",
         "assd_": "ASSD",
     }
-
-    #LOWER_IS_BETTER = {"HD", "HD95", "DOE"}
-    #HIGHER_IS_BETTER = {"Dice"}
 
 
     def __init__(
@@ -138,7 +135,7 @@ class SegmentationReport:
         if not rows:
             raise ValueError(
                 "No metric columns found. Expected columns like "
-                "dice_liver, hd95_liver, hd_liver, or doe_liver."
+                "dice_liver, hd95_liver, hd_liver."
             )
 
         return pd.DataFrame(rows)
@@ -375,7 +372,7 @@ class SegmentationReport:
     def _metric_ylabel(self, metric):
         if metric == "Dice":
             return "Dice"
-        if metric in {"HD", "HD95", "DOE", "USD", "ASSD"}:
+        if metric in {"HD", "HD95", "USD", "ASSD"}:
             return f"{metric} [mm]"
         return metric
 
