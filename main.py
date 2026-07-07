@@ -520,7 +520,7 @@ def main():
             pred_dir=pred_dir,
             patient_ids=test_patient_list,
             name_mapping=name_mapping,
-            selected_metrics=['DSC', 'HDD95', 'USD', 'ASSD'],
+            selected_metrics=['DSC', 'HDD95', 'ASSD'],
             metrics_dir=evaluate_data,
         )
 

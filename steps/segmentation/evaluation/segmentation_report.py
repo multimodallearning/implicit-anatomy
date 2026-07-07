@@ -21,7 +21,6 @@ class SegmentationReport:
         "dice_": "Dice",
         "hd95_": "HD95",
         "hd_": "HD",
-        "usd_": "USD",
         "assd_": "ASSD",
     }
 
@@ -372,8 +371,7 @@ class SegmentationReport:
     def _metric_ylabel(self, metric):
         if metric == "Dice":
             return "Dice"
-        if metric in {"HD", "HD95", "USD", "ASSD"}:
+        if metric in {"HD", "HD95", "ASSD"}:
             return f"{metric} [mm]"
         return metric
-
 

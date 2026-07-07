@@ -1,6 +1,5 @@
 import numpy as np
 import SimpleITK as sitk
-from pip._internal.models import target_python
 
 from surface_distance import metrics
 
@@ -8,7 +7,6 @@ from util.tools import keep_one_label
 
 def compute_surface_distance(image1, image2, classes):
     results = {}
-    usd_values = []
     assd_values = []
 
     target = sitk.GetArrayViewFromImage(image1)
@@ -20,7 +18,6 @@ def compute_surface_distance(image1, image2, classes):
         prediction_mask = prediction == label
 
         if not target_mask.any() or not prediction_mask.any():
-            results[f"usd_{class_name}"] = np.nan
             results[f"assd_{class_name}"] = np.nan
             continue
 
@@ -30,15 +27,6 @@ def compute_surface_distance(image1, image2, classes):
             spacing_zyx,
         )
 
-        gt_to_pred = np.mean(
-            distances["distances_gt_to_pred"]
-        )
-        pred_to_gt = np.mean(
-            distances["distances_pred_to_gt"]
-        )
-        usd = 0.5 * (gt_to_pred + pred_to_gt)
-
-        # Flächengewichtete ASSD
         weighted_gt_to_pred, weighted_pred_to_gt = (
             metrics.compute_average_surface_distance(distances)
         )
@@ -46,16 +34,10 @@ def compute_surface_distance(image1, image2, classes):
             weighted_gt_to_pred + weighted_pred_to_gt
         )
 
-        results[f"usd_{class_name}"] = float(usd)
         results[f"assd_{class_name}"] = float(assd)
 
-        usd_values.append(usd)
         assd_values.append(assd)
 
-    results["usd_tot"] = (
-        float(np.mean(usd_values))
-        if usd_values else np.nan
-    )
     results["assd_tot"] = (
         float(np.mean(assd_values))
         if assd_values else np.nan

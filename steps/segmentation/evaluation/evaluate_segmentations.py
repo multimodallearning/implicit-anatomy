@@ -11,13 +11,12 @@ from common.scoring import compute_hausdorff, compute_dice_per_organ, compute_su
 
 class EvaluateSegmentations:
 
-    metrics = ['DSC', 'HDD', 'HDD95', 'USD', 'ASSD']
+    metrics = ['DSC', 'HDD', 'HDD95', 'ASSD']
 
     metric_names = {
         'DSC'   : 'Dice coefficient',
         'HDD'   : 'Hausdorff distance',
         'HDD95' : '95th percentile Hausdorff distance',
-        'USD'   : 'Unweighted surface distance',
         'ASSD'  : 'Average symmetric surface distance',
 
     }
@@ -70,7 +69,7 @@ class EvaluateSegmentations:
                 compute_dice_per_organ(gt, pred, self.classes)
             )
 
-        if any(metric in self.selected_metrics for metric in ['USD', 'ASSD']):
+        if "ASSD" in self.selected_metrics:
             results.update(
                 compute_surface_distance(gt, pred, self.classes)
             )
@@ -136,7 +135,6 @@ class EvaluateSegmentations:
         )
 
         return df
-
 
 
 
