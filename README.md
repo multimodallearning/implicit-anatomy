@@ -24,6 +24,7 @@ The environment can be created with the provided setup script:
 
 ```bash
 bash env_setup.sh ia
+```
 
 ## Data
 
