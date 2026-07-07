@@ -20,12 +20,12 @@ This repository implements a surface-conditioned implicit neural representation 
 
 ## Installation
 
-Python 3.7--3.9 is recommended. Newer Python versions may require dependency updates, especially for the CUDA point operations and PyTorch stack.
+Python 3.7 is recommended for reproducing the original environment. Newer Python versions may require updating the PyTorch/CUDA stack and rebuilding the CUDA point operations.
 
 Create and activate a conda environment:
 
 ```bash
-conda create -n implicit-anatomy python=3.9 -y
+conda create -n implicit-anatomy python=3.7 -y
 conda activate implicit-anatomy
 ```
 
