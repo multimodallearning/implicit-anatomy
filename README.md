@@ -20,28 +20,10 @@ This repository implements a surface-conditioned implicit neural representation 
 
 ## Installation
 
-Python 3.7 is recommended for reproducing the original environment. Newer Python versions may require updating the PyTorch/CUDA stack and rebuilding the CUDA point operations.
-
-Create and activate a conda environment:
+The environment can be created with the provided setup script:
 
 ```bash
-conda create -n implicit-anatomy python=3.7 -y
-conda activate implicit-anatomy
-```
-
-Install the Python dependencies:
-
-```bash
-pip install -r requirements-full.txt
-```
-
-The custom point operations in `lib/pointops` may need to be compiled for the local PyTorch and CUDA setup:
-
-```bash
-cd lib/pointops
-python setup.py install
-cd ../..
-```
+bash env_setup.sh ia
 
 ## Data
 

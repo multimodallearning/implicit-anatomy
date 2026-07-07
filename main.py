@@ -165,8 +165,8 @@ def main():
     experiment_root = os.path.join(args.save_path, args.experiment_name)
     preprocess_data = os.path.join(experiment_root, "1_preprocess")
     training_data = os.path.join(experiment_root, "2_train")
-    generate_data = os.path.join(experiment_root, "3_generate/weights_last")
-    evaluate_data = os.path.join(experiment_root, "4_evaluate/weights_last")
+    generate_data = os.path.join(experiment_root, "3_generate")
+    evaluate_data = os.path.join(experiment_root, "4_evaluate")
     gt_dir = args.gt_dir or os.path.join(preprocess_data, "mapped_masks")
 
     # Load Patient Data
