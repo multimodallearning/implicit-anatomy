@@ -98,6 +98,25 @@ By default, experiment outputs are written below `save_path`:
 
 The generated volumes are stored as NIfTI files, and evaluation produces a CSV table together with an HTML segmentation report.
 
+## Acknowledgements
+
+This repository builds upon the original Point Transformer implementation by Zhao et al. (2021):
+https://github.com/POSTECH-CVLab/point-transformer
+
 ## Citation
 
-Citation information will be added upon publication.
+If you use this code, please cite:
+
+```bibtex
+@inproceedings{krnjacasurface,
+  title={Surface-Conditioned Implicit Reconstruction of Internal Anatomy for Automated Patient Positioning},
+  author={Krnjaca, Denis and Heinrich, Mattias P},
+  booktitle={Off-Grid: 1st Workshop on Continuous Representations and Grid-Free Methods in Medical Imaging},
+  year={2026}
+}
+```
+
+The official Springer LNCS citation will be added once the proceedings are published.
+
+
+
