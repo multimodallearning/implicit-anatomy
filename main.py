@@ -496,8 +496,6 @@ def main():
                 direction=data["direction"][0].tolist(),
             )
 
-            if 'flop_counter' in out:
-                perf_dict['flops'] = out['flop_counter']
 
             # save GPU and time usage
             perf_dicts.append(perf_dict)

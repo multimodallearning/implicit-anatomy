@@ -21,7 +21,6 @@ fastjsonschema==2.21.2
 fastrlock==0.8.3
 Flask==2.2.5
 fonttools==4.38.0
-fvcore==0.1.5.post20221221
 h5py
 idna==3.10
 importlib-metadata==6.7.0

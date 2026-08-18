@@ -1,20 +1,16 @@
 import torch
 import time
 
-from fvcore.nn import FlopCountAnalysis
-
 from common.dpt_coordinates import make_dpt_grid
-from util.jit_handles import _SUPPORTED_OPS
 
 
 class SegmentationVolumeGenerator(object):
     def __init__(self,  model, num_classes ,points_batch_size=100000,
-                 device=None, compute_flops=False):
+                 device=None):
         self.model = model
         self.num_classes = num_classes
         self.points_batch_size = points_batch_size
         self.device = device
-        self.compute_flops = compute_flops
 
     def generate_volume(self, data, dim):
         self.model.eval()
@@ -45,9 +41,6 @@ class SegmentationVolumeGenerator(object):
             # print("body_points shape:", body_points.shape)
             # print("body_offsets:", body_offsets)
 
-            if self.compute_flops:
-                flops = FlopCountAnalysis(self.model.encoder, (body_points, body_offsets,)).uncalled_modules_warnings(False).unsupported_ops_warnings(False).set_op_handle(**_SUPPORTED_OPS)
-                self.flop_counter = flops.total()
 
         stats_dict['time (encode inputs)'] = time.time() - t0
 
@@ -58,8 +51,6 @@ class SegmentationVolumeGenerator(object):
         out = {}
         out['volume'] = volume
         out['stats_dict'] = stats_dict
-        if self.compute_flops:
-            out['flop_counter'] = self.flop_counter
 
         return out
 
@@ -90,10 +81,6 @@ class SegmentationVolumeGenerator(object):
 
             labels = logits.argmax(dim=-1)
             label_chunks.append(labels.squeeze(0).cpu())
-
-            if self.compute_flops :
-                flops = FlopCountAnalysis(self.model.decoder, (pi,body_codes)).uncalled_modules_warnings(False).set_op_handle(**_SUPPORTED_OPS)
-                self.flop_counter += flops.total()
 
         return torch.cat(label_chunks, dim=0)
 
